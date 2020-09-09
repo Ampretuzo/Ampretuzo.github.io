@@ -68,17 +68,39 @@ requirements: requirements/base.txt requirements/dev.txt requirements/deploy.txt
 test-unit: .make.venv.dev
 	@ ${WITH_VENV} python -c 'import pytest; print("pytest would run as version " + pytest.__version__ + "!")'</pre>
 
-	<p>This is pretty cool. <code>make test-unit</code> on a fresh repo will:
+	<p>This <code>Makefile</code> helps in dependency management and streamlines development process by automating
+		<code>pip-tools</code>.<br>
+		Let's say we just cloned a repo set up this way. To get started by running unit tests all* we have to do is
+		<code>make test-unit</code>. It will:
 	<ol>
 		<li>Create a new virtual environment under <code>venv</code>.</li>
 		<li>Install <code>pip-tools</code> in it.</li>
-		<li><code>pip-sync</code> all the requirements - both application and development dependencies.</li>
+		<li><code>pip-compile</code> all the <code>.in</code> requirements (application and development) in correct
+			order to <code>.txt</code>.</li>
+		<li><code>pip-sync</code> all the requirements.</li>
 		<li>Run whatever we needed to run in the beginning, in this case - <code>pytest</code>.</li>
 	</ol>
-	Of course, all of this happens under <code>venv</code> environment.
+	Of course all of this happens under <code>venv</code> environment.<br>
+	And of course the subsequent calls to <code>make test-unit</code> will simply invoke <code>pytest</code> since
+	everything is already set up and up to date.<br>
+	Pretty smart - everything is automatic.<br>
+	* Not quite that easy actually - we'd have to install <code>virtualenv</code> dependency and correct Python version.
 	</p>
-	
-	<p>Cont.</p>
+
+	<p>
+		Now, let's say we're testing out some new library, say <code>google-cloud-speech</code>.<br>
+		All we have to do is <code>echo 'google-cloud-speech~=1.3.2' >> requirements/base.in</code> and
+		<code>make test-unit</code> again:<br>
+	<ol>
+		<li>Change in <code>base.in</code> will be detected and it will be compiled to <code>base.txt</code>.</li>
+		<li>Since development dependencies depend on <code>base.txt</code>, <code>dev.in</code> will get recompiled too
+			to respect new application dependencies.</li>
+		<li>Virtual environment will be <code>pip-sync</code>-ed to new requirements.</li>
+		<li>Unit tests will run and <code>from google.cloud import speech_v1</code> will work.</li>
+	</ol>
+	During all of this we're free to work on code and forget about manually managing dependencies - our virtual
+	environment and pinned requirements are always up to date.
+	</p>
 
 </body>
 
