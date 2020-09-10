@@ -11,7 +11,7 @@
 </head>
 
 <body>
-	<h1>Application dependency management in Python</h1>
+	<h1 id="app-deps-py">Application dependency management in Python</h1>
 	<pre>.DELETE_ON_ERROR:
 SHELL := /bin/bash
 
@@ -83,8 +83,8 @@ test-unit: .make.venv.dev
 	And of course the subsequent calls to <code>make test-unit</code> will simply invoke <code>pytest</code> since
 	everything is already set up and up to date.<br>
 	Pretty smart - everything is automatic.<br>
-	<em>* Well, not quite that easy actually: we'd have to install <code>virtualenv</code> dependency and correct version
-	of Python, here - 3.8.</em>
+	<small>* Well, not quite that easy actually: we'd have to install <code>virtualenv</code> dependency and correct
+		version of Python, here - 3.8.</small>
 	</p>
 
 	<p>
@@ -95,7 +95,7 @@ test-unit: .make.venv.dev
 		<li>change in <code>base.in</code> will be detected and it will be compiled to <code>base.txt</code>.</li>
 		<li>Since development requirements depend on <code>base.txt</code>, <code>dev.in</code> will get recompiled too
 			to respect new application requirements.</li>
-		<li>Virtual environment will be <code>pip-sync</code>-ed to new requirements.</li>
+		<li>Virtual environment will be <code>pip-sync</code>-ed with new requirements.</li>
 		<li>Unit tests will run and <code>from google.cloud import speech_v1</code> will work.</li>
 	</ol>
 	During all of this we're free to work on code and forget about manually managing dependencies - our virtual
@@ -109,10 +109,12 @@ test-unit: .make.venv.dev
 		development requirements depend - <code>dev.in</code> must respect what's inside already compiled
 		<code>base.txt</code> and it is
 		very easy to express such relationship with <code>GNU Make</code>. All we have to do is configure prerequisites
-		correctly, as seen on <code>Makefile</code> above.<br>
-		The "uncompiled" requirement files might look like this (Tucked inside
-		<code>requirements</code> directory not to flood project root too much.):<br>
-	<pre># requirements/base.in
+		correctly.<br>
+		The "uncompiled" requirement files might look like this:<br>
+	<pre># Note that requirement files are tucked inside "requirements"
+# directory not to flood project root.
+	
+# requirements/base.in
 
 -c pip-tools.txt
 
@@ -142,10 +144,27 @@ freezegun~=0.3.13
 ipython~=7.1
 pandas~=0.23</pre>
 	Note that <code>-c</code> constraints are followed by <code>Makefile</code> prerequisites.<br>
-	Also note that <code>pip-tools.txt</code> doesn't "participate" in requirements compilation/installation flow to
+	Also note that <code>pip-tools.in</code> doesn't "participate" in requirements compilation flow to
 	avoid chicken and egg problem - we couldn't <code>pip-compile pip-tools.in</code> without having
-	<code>pip-tools</code> already installed.<br>
-	You can think of Python + <code>pip-tools</code> as a "base" environment, upon which we can build workflow automation.
+	<code>pip-tools</code> in place already.<br>
+	You can think of Python + <code>pip-tools</code> as a "base" environment, upon which we can build workflow
+	automation. Therefore, <code>pip-tools.txt</code> is generated manually only once when setting up the project.
+	</p>
+	<p>
+		Why not use <code>Pipenv</code> or <code>Poetry</code>?<br>
+		<code>Pipenv</code> reviews on the web are so unfavorable that I ruled out that option straight away without
+		even testing it out.<br>
+		As for <code>Poetry</code> - I did try it out, but encountered a deal-breaker bug.<br>
+		I created an issue (<a href="https://github.com/python-poetry/poetry/issues/2080">#2080</a>), which didn't
+		attract
+		any attention for several months.<br>
+		Recently, just as I was starting to roll up my sleeves to take up the holy challenge of contributing to open
+		source by fixing that bug myself, I noticed a PR from project author
+		linking to my issue. Two PRs actually: a refactor in the core and an actual fix.<br>
+		Needless to say, my ambition of contributing such a fix was not based in reality, to put it mildly.<br>
+		But the point is - the project is being actively developed and well maintained.<br>
+		I believe that <code>Poetry</code> will eventually become Python packaging and dependency management
+		standard.<br>
 	</p>
 </body>
 
