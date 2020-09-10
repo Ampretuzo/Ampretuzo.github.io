@@ -102,6 +102,51 @@ test-unit: .make.venv.dev
 	environment and pinned requirements are always up to date.
 	</p>
 
+	<p>
+		<code>GNU Make</code> works with <code>pip-tools</code> especially well, since it's primarily designed for
+		"compilation artifact" kind of tasks.<br>
+		Application requirements <code>base.in</code> compile to corresponding <code>.txt</code> file, upon which
+		development requirements depend - <code>dev.in</code> must respect what's inside already compiled
+		<code>base.txt</code> and it is
+		very easy to express such relationship with <code>GNU Make</code>. All we have to do is configure prerequisites
+		correctly, as seen on <code>Makefile</code> above.<br>
+		The "uncompiled" requirement files might look like this (Tucked inside
+		<code>requirements</code> directory not to flood project root too much.):<br>
+	<pre># requirements/base.in
+
+-c pip-tools.txt
+
+Flask~=1.1
+loginpass~=0.3
+numpy~=1.1
+tensorflow~=2.0
+google-cloud-storage~=1.2
+google-cloud-ndb~=1.1
+
+# requirements/deploy.in
+
+-c pip-tools.txt
+-c base.txt
+
+gunicorn~=19.8
+
+# requirements/dev.in
+
+-c pip-tools.txt
+-c base.txt
+-c deploy.txt
+
+pytest~=5.4
+coverage~=5.0
+freezegun~=0.3.13
+ipython~=7.1
+pandas~=0.23</pre>
+	Note that <code>-c</code> constraints are followed by <code>Makefile</code> prerequisites.<br>
+	Also note that <code>pip-tools.txt</code> doesn't "participate" in requirements compilation/installation flow to
+	avoid chicken and egg problem - we couldn't <code>pip-compile pip-tools.in</code> without having
+	<code>pip-tools</code> already installed.<br>
+	You can think of Python + <code>pip-tools</code> as a "base" environment, upon which we can build workflow automation.
+	</p>
 </body>
 
 </html>
