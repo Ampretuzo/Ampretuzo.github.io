@@ -72,7 +72,7 @@ test-unit: .make.venv.dev
 		Say we just cloned a repo set up this way. We can run unit tests straight away* by <code>make test-unit</code>.
 		It will:
 	<ol>
-		<li>Create a new virtual environment under <code>venv</code>.</li>
+		<li>create a new virtual environment under <code>venv</code>.</li>
 		<li>Install <code>pip-tools</code> in it.</li>
 		<li><code>pip-compile</code> all the <code>.in</code> requirements (application and development) in correct
 			order to <code>.txt</code>.</li>
@@ -83,8 +83,8 @@ test-unit: .make.venv.dev
 	And of course the subsequent calls to <code>make test-unit</code> will simply invoke <code>pytest</code> since
 	everything is already set up and up to date.<br>
 	Pretty smart - everything is automatic.<br>
-	* Well, not quite that easy actually: we'd have to install <code>virtualenv</code> dependency and correct version
-	of Python, here - 3.8.
+	<em>* Well, not quite that easy actually: we'd have to install <code>virtualenv</code> dependency and correct version
+	of Python, here - 3.8.</em>
 	</p>
 
 	<p>
@@ -92,7 +92,7 @@ test-unit: .make.venv.dev
 		All we have to do is <code>echo 'google-cloud-speech~=1.3.2' >> requirements/base.in</code> and
 		then simply call <code>make test-unit</code> again:<br>
 	<ol>
-		<li>Change in <code>base.in</code> will be detected and it will be compiled to <code>base.txt</code>.</li>
+		<li>change in <code>base.in</code> will be detected and it will be compiled to <code>base.txt</code>.</li>
 		<li>Since development requirements depend on <code>base.txt</code>, <code>dev.in</code> will get recompiled too
 			to respect new application requirements.</li>
 		<li>Virtual environment will be <code>pip-sync</code>-ed to new requirements.</li>
