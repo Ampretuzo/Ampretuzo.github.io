@@ -12,7 +12,9 @@
 
 <body>
 	<h1 id="app-deps-py">Application dependency management in Python</h1>
-	<pre>.DELETE_ON_ERROR:
+	<pre># Makefile
+
+.DELETE_ON_ERROR:
 SHELL := /bin/bash
 
 WITH_VENV := source venv/bin/activate && 
@@ -68,21 +70,21 @@ requirements: requirements/base.txt requirements/dev.txt requirements/deploy.txt
 test-unit: .make.venv.dev
 	@ ${WITH_VENV} python -c 'import pytest; print("pytest would run as version " + pytest.__version__ + "!")'</pre>
 
-	<p><code>Makefile</code> above automates <code>pip-tools</code> dependency management.<br>
+	<p><code>Makefile</code> above automates <code>pip-tools</code> dependency management workflow during
+		development.<br>
 		Say we just cloned a repo set up this way. We can run unit tests straight away* by <code>make test-unit</code>.
 		It will:
 	<ol>
 		<li>create a new virtual environment under <code>venv</code>.</li>
 		<li>Install <code>pip-tools</code> in it.</li>
-		<li><code>pip-compile</code> all the <code>.in</code> requirements (application and development) in correct
-			order to <code>.txt</code>.</li>
+		<li><code>pip-compile</code> all the <code>.in</code> requirements (application, deployment and development)
+			to <code>.txt</code> in correct order.</li>
 		<li><code>pip-sync</code> all the requirements.</li>
 		<li>Run whatever we needed to run in the beginning, in this case - <code>pytest</code>.</li>
 	</ol>
 	Of course all of this happens under <code>venv</code> environment.<br>
 	And of course the subsequent calls to <code>make test-unit</code> will simply invoke <code>pytest</code> since
-	everything is already set up and up to date.<br>
-	Pretty smart - everything is automatic.<br>
+	everything would be already set up and up to date.<br>
 	<small>* Well, not quite that easy actually: we'd have to install <code>virtualenv</code> dependency and correct
 		version of Python, here - 3.8.</small>
 	</p>
@@ -98,13 +100,14 @@ test-unit: .make.venv.dev
 		<li>Virtual environment will be <code>pip-sync</code>-ed with new requirements.</li>
 		<li>Unit tests will run and <code>from google.cloud import speech_v1</code> will work.</li>
 	</ol>
-	During all of this we're free to work on code and forget about manually managing dependencies - our virtual
-	environment and pinned requirements are always up to date.
+	During all of this we were free to work on code and forget about manually managing dependencies - our virtual
+	environment and pinned requirements were managed and kept up to date.
 	</p>
 
 	<p>
-		<code>GNU Make</code> works with <code>pip-tools</code> especially well, since it's primarily designed for
-		"compilation artifact" kind of tasks.<br>
+		<code>GNU Make</code> was designed precisely for compilation tasks and therefore it works really well with
+		<code>pip-tools</code>.
+		After all, <code>pip-compile</code> is <code>pip-<em>compile</em></code>&hellip;<br>
 		Application requirements <code>base.in</code> compile to corresponding <code>.txt</code> file, upon which
 		development requirements depend - <code>dev.in</code> must respect what's inside already compiled
 		<code>base.txt</code> and it is
@@ -112,7 +115,8 @@ test-unit: .make.venv.dev
 		correctly.<br>
 		The "uncompiled" requirement files might look like this:<br>
 	<pre># Note that requirement files are tucked inside "requirements"
-# directory not to flood project root.
+# directory to avoid flooding project root.
+
 	
 # requirements/base.in
 
@@ -125,12 +129,14 @@ tensorflow~=2.0
 google-cloud-storage~=1.2
 google-cloud-ndb~=1.1
 
+
 # requirements/deploy.in
 
 -c pip-tools.txt
 -c base.txt
 
 gunicorn~=19.8
+
 
 # requirements/dev.in
 
@@ -143,16 +149,16 @@ coverage~=5.0
 freezegun~=0.3.13
 ipython~=7.1
 pandas~=0.23</pre>
-	Note that <code>-c</code> constraints are followed by <code>Makefile</code> prerequisites.<br>
+	Note that <code>Makefile</code> prerequisites directly map to <code>-c</code> constraints.<br>
 	Also note that <code>pip-tools.in</code> doesn't "participate" in requirements compilation flow to
 	avoid chicken and egg problem - we couldn't <code>pip-compile pip-tools.in</code> without having
 	<code>pip-tools</code> in place already.<br>
-	You can think of Python + <code>pip-tools</code> as a "base" environment, upon which we can build workflow
+	You can think of Python + <code>pip-tools</code> as "base" environment, upon which we can build workflow
 	automation. Therefore, <code>pip-tools.txt</code> is generated manually only once when setting up the project.
 	</p>
 	<p>
-		Why not use <code>Pipenv</code> or <code>Poetry</code>?<br>
-		<code>Pipenv</code> reviews on the web are so unfavorable that I ruled out that option straight away without
+		Why not <code>Pipenv</code> or <code>Poetry</code>?<br>
+		<code>Pipenv</code> reviews on the web were so unfavorable that I ruled out that option straight away without
 		even testing it out.<br>
 		As for <code>Poetry</code> - I did try it out, but encountered a deal-breaker bug.<br>
 		I created an issue (<a href="https://github.com/python-poetry/poetry/issues/2080">#2080</a>), which didn't
@@ -160,12 +166,34 @@ pandas~=0.23</pre>
 		any attention for several months.<br>
 		Recently, just as I was starting to roll up my sleeves to take up the holy challenge of contributing to open
 		source by fixing that bug myself, I noticed a PR from project author
-		linking to my issue. Two PRs actually: a refactor in the core and an actual fix.<br>
+		linking to my issue. Two PRs actually: a refactor in the core and an actual fix. (Gotta appreciate it when
+		people refactor their code! That PR was actually just a first step of larger scale refactor, as author put
+		it in comment.)<br>
 		Needless to say, my ambition of contributing such a fix was not based in reality, to put it mildly.<br>
 		But the point is - the project is being actively developed and well maintained.<br>
 		I believe that <code>Poetry</code> will eventually become Python packaging and dependency management
 		standard.<br>
 	</p>
+	<p>
+		I still appreciate simple setups like above though.<br>
+		For one, <code>pip-tools</code> is a battle tested software and relying on it is never a bad idea. I've been
+		using this setup for quite some time already and I don't seem to have any serious complaints with it.<br>
+		Also, it's very simple and does only what I need it to. Packaging and distribution is not one of them.<br>
+		Third, the <code>Makefile</code> is out there in the project to be fiddled with. If something breaks you can fix
+		it right there.<br>
+		But there are downsides too of course: for teams it might be easier to onboard new developers with
+		<code>Poetry</code> - it works much like <code>npm</code> and that's much less intimidating than my setup. As
+		<code>Poetry</code> matures and gains more adoption it will become a de facto standard. At that point
+		deviating from it will no longer be pragmatic, especially once all the bugs are dealt with. (Which I don't
+		think there are many left of.)<br>
+	</p>
+
+	<small>(A template of sorts available on my gh <a
+			href="https://github.com/Ampretuzo/make-requirements">repo</a>.)</small><br>
+	In this <a
+		href="https://jamescooke.info/a-successful-pip-tools-workflow-for-managing-python-package-requirements.html">blog</a>
+	James Cooke describes his <code>Makefile</code>. It's cleaner and more elegant by virtue of using wildcards.<br>
+
 </body>
 
 </html>
