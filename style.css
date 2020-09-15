@@ -34,3 +34,11 @@ code, pre {
     border-bottom: 1px solid #d8dee9;
     color: #2d509c;
 }
+
+/* See: https://stackoverflow.com/a/46033478/11950169 */
+
+h1 a {
+    text-decoration: none;
+    color: inherit;
+    outline: 0;
+}
